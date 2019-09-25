@@ -21,7 +21,7 @@ if (iterations % 1 ) != 0:
 for i in range(int(iterations)):  # convert to while loop later that checks for stopping criteria
     print("Iteration " + str(i) + ":")
     # step 1: heat water from solar panel
-    temp1 = temp2 + (solarRate * basis) / (massSolar * specificHeat)  # equation 1
+    temp1 = temp2 + (solarRate * basis) / ((massFlow*basis) * specificHeat)  # equation 1
     print("   T1 = " + str(temp1))
 
     # step 2: mix water from heated pipe to tank
@@ -31,7 +31,7 @@ for i in range(int(iterations)):  # convert to while loop later that checks for 
     print("   T2 = " + str(temp2))
 
     # step 3: discharge heat
-    temp2 = temp2 + (dischargeRate * basis) / (massTank * specificHeat)  # equation 3
+    temp2 = temp2 + (dischargeRate * basis) / ((massFlow*basis) * specificHeat)  # equation 3
     print("   T2 = " + str(temp2))
 
 print("For " + str(duration) + " seconds at a frequency of " + str(basis) + " htz.")
