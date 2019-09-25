@@ -1,6 +1,6 @@
 import sys
 
-stepSize = .2 # sec
+stepSize = .0001 # sec
 heatRate = 50 # kWatts
 massFlow = 5 # kg / sec
 temp1 = 20 # Celsius (initial temperature of hot water)
@@ -24,14 +24,14 @@ fidelity = stepSize * massFlow # kg
 iterations = duration * massFlow / fidelity # unit less
 
 for i in range(int(iterations)):
-    print("Iteration " + str(i) + ":")
+    # print("Iteration " + str(i) + ":")
     # step 1: mix water from pipe with water in heater
     temp1 = (fidelity * temp2 + (massSolar - fidelity) * temp1) / massSolar # a weighted average, see appendix 1 for derivation, equation 1, whatever
 
     # step 2: add heat to ALL  water in heater
     addedHeat = heatRate * stepSize
     temp1 = temp1 + addedHeat / (massSolar * specificHeat)
-    print("   temp1: " + str(temp1))
+    #print("   temp1: " + str(temp1))
 
     # step 3: add warm water to tank
     temp2 = (fidelity * temp1 + (massTank - fidelity) * temp2) / massTank
@@ -41,10 +41,10 @@ for i in range(int(iterations)):
     temp2 = temp2 + addedHeat / (massTank * specificHeat)
 
     # report
-    print("   temp2: " + str(temp2))
-    print("   ---")
-    print("   temp1 difference: " + str(temp1_previous - temp1))
-    print("   temp2 difference: " + str(temp2_previous - temp2))
+    #print("   temp2: " + str(temp2))
+    #print("   ---")
+    #print("   temp1 difference: " + str(temp1_previous - temp1))
+    #print("   temp2 difference: " + str(temp2_previous - temp2))
 
     if abs(temp1_previous - temp1) < convergeCriteria and not temp1_converge_flag:
         temp1_converge = i
@@ -59,15 +59,21 @@ for i in range(int(iterations)):
         temp2_previous = temp2
 
 print("For step size = " + str(stepSize) + " (used " + str(iterations) + " iterations).")
-print("temp1 converged after " + str(temp1_converge + 1) + " iterations, which maps to " + str(temp1_converge * stepSize) + " seconds of run time.")
-print("temp2 converged after " + str(temp2_converge + 1) + " iterations, which maps to " + str(temp2_converge * stepSize) + " seconds of run time.")
+print("Final temp1: " + str(temp1))
+print("Final temp2: " + str(temp2))
+if temp1_converge_flag:
+    print("temp1 converged after " + str(temp1_converge + 1) + " iterations, which maps to " + str(temp1_converge * stepSize) + " seconds of run time.")
+else:
+    print("temp1 did not converge. Final difference: " + str(abs(temp1_previous - temp1)))
+
+if temp2_converge_flag:
+    print("temp2 converged after " + str(temp2_converge + 1) + " iterations, which maps to " + str(temp2_converge * stepSize) + " seconds of run time.")
+else:
+    print("temp2 did not converge. Final difference: " + str(abs(temp2_previous - temp2)))
 
 
+'''
+BUG:
+- monitor the fidelity does not divide the mass flow rate
 
-
-
-
-
-
-def logValues():
-    pass
+'''
