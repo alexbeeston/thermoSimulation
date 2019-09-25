@@ -1,40 +1,48 @@
 import sys
 
-# here we go
-basis = 5 # kg of water
-solarRate = 50 # kWatts
-dischargeRate = -50 # kWatts
-massFlow = 10 # kg / sec
+stepSize = .2 # sec
+heatRate = 50 # kWatts
+massFlow = 5 # kg / sec
 temp1 = 10 # Celsius (initial temperature of hot water)
 temp2 = 10 # Celsius (initial temperature of cold water)
-massSolar = 20 # kg
-massTank = 500 # kg
-specificHeat = 4.184 # kJ/(kg * K)
-duration = 10 # second
+massSolar = 15 # kg
+massTank = 100 # kg
+specificHeat = 4.184 # kJ/(kg * C)
+duration = 60 # sec
+temp1_previous  = 10
+temp2_previous = 10
 
 # BEGIN
+fidelity = stepSize * massFlow # kg
+iterations = duration * massFlow / fidelity # unit less
 
-for i in range(int(iterations)):  # convert to while loop later that checks for stopping criteria
+for i in range(int(iterations)):
     print("Iteration " + str(i) + ":")
-    # step 1: heat "basis" water from solar panel
-    temp1 = temp2 + (solarRate * basis) / ((massFlow*basis) * specificHeat)  # equation 1
-    print("   T1 = " + str(temp1))
+    # step 1: mix water from pipe with water in heater
+    temp1 = (fidelity * temp2 + (massSolar - fidelity) * temp1) / massSolar # a weighted average, see appendix 1 for derivation, equation 1, whatever
 
-    # step 2: mix with the water in the first pipe
+    # step 2: add heat to ALL  water in heater
+    addedHeat = heatRate * stepSize
+    temp1 = temp1 + addedHeat / (massSolar * specificHeat)
+    print("   temp1: " + str(temp1))
+
+    # step 3: add warm water to tank
+    temp2 = (fidelity * temp1 + (massTank - fidelity) * temp2) / massTank
+
+    # step 4: remove heat from ALL water in tank
+    addedHeat = -heatRate * stepSize
+    temp2 = temp2 + addedHeat / (massTank * specificHeat)
+
+    # report
+    print("   temp2: " + str(temp2))
+    print("   ---")
+    print("   temp1 difference: " + str(temp1_previous - temp1))
+    print("   temp2 difference: " + str(temp2_previous - temp2))
+    temp1_previous = temp1
+    temp2_previous = temp2
 
 
-    # step 3:
-    # step 2: mix water from heated pipe to tank
-    massOfWaterEnteringTank = massFlow * basis
-    massMix = massTank - massOfWaterEnteringTank
-    temp2 = (massOfWaterEnteringTank*temp1 + massMix*temp2) / (massMix + massOfWaterEnteringTank) # equation 2
-    print("   T2 = " + str(temp2))
-
-    # step 3: discharge heat
-    temp2 = temp2 + (dischargeRate * basis) / ((massFlow*basis) * specificHeat)  # equation 3
-    print("   T2 = " + str(temp2))
-
-print("For " + str(duration) + " seconds at a frequency of " + str(basis) + " htz.")
+print("For step size = " + str(stepSize) + " (used " + str(iterations) + " iterations).")
 
 
 
