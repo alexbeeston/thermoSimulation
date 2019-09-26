@@ -44,14 +44,30 @@ def graphResults(times, hotTemperatures, coldTemperatures):
         print(
             "The graph of the data could not be generated. Try running the command \"pip install matplotlib\" to install the necessary modules")
 
+# Open Data Output File
+def openDataFile():
+    logFileName = "data.csv"
+    if len(sys.argv) > 2:
+        print("Usage Error: sim.py [outPutFileName]")
+        sys.exit()
+    elif len(sys.argv) == 2:
+        logFileName = sys.argv[1]
+    dataFile = open(logFileName, "w")
+    headers = "Iteration,Time Stamp (sec),Hot Temperature (Cel),Cold Temperature (Cel)\n"
+    dataFile.write(headers)
+    dataFile.write("0,0," + str(hotTemp) + "," + str(coldTemp) + "\n")
+    return dataFile
+
+
 ###################
 ### ENTRY POINT ###
 ###################
-# Define Thermodynamic Constants
+
+# define thermodynamic constants
 specificHeatWater = 4.184 # kJ/(kg * C)
 densityWater = 1000 # kg/m^3
 
-# Parse Parameters File
+# parse parameter file
 parameterFile = open("parameters.txt", "r")
 p = {}
 for line in parameterFile:
@@ -75,7 +91,7 @@ stopOnConverge = False
 if stopOnConverge_int == 1:
     stopOnConverge = True
 
-# Validate Parameters
+# validate parameters
 for pair in p.items():
     if float(pair[1]) < 0:
         print("Parameter Error: \"" + pair[0] + "\" must be greater than zero.")
@@ -107,13 +123,13 @@ if maxTemp < minTemp:
     print("Parameter error: The maximum permissible temperature is less than the minimum permissible temperature")
     sys.exit()
 
-# Generate Run-Time Parameters
+# generate run-time parameters
 fidelity = stepSize * massFlow # kg
 iterations = duration * massFlow / fidelity # unitless
 heaterMass = heaterVolume * densityWater # kg
 tankMass = tankVolume * densityWater #kg
 
-# Define Variables Used for Determine Convergence
+# define variables vsed for determining convergence
 hotTemp_previous  = hotTemp
 coldTemp_previous = hotTemp
 hotTemp_converge = -1
@@ -121,24 +137,14 @@ coldTemp_converge = -1
 hotTemp_converge_flag = False
 coldTemp_converge_flag = False
 
-# Open Data Output File
-logFileName = "data.csv"
-if len(sys.argv) > 2:
-    print("Usage Error: sim.py [outPutFileName]")
-    sys.exit()
-elif len(sys.argv) == 2:
-    logFileName = sys.argv[1]
-dataFile = open(logFileName, "w")
-headers = "Iteration,Time Stamp (sec),Hot Temperature (Cel),Cold Temperature (Cel)\n"
-dataFile.write(headers)
-dataFile.write("0,0," + str(hotTemp) + "," + str(coldTemp) + "\n")
-
-# initialize simulation data and flow control variables
+# initialize simulation data, flow control variables, and open log file
 times = [0]
 hotTemperatures = [hotTemp]
 coldTemperatures = [coldTemp]
 i = 0
 keepGoing = True
+dataFile = openDataFile()
+
 # Run Simulation
 while i < int(iterations) and keepGoing:
     # step 1 of simulation: mix cold water into the heater
