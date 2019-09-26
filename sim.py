@@ -1,21 +1,18 @@
 import sys
 
+#################################
+### EXTENSIBLE HELP FUNCTIONS ###
+#################################
+def calcHeatInRate(heatInRate):
+    return heatInRate
+def calcRemovedHeat(heatOutRate):
+    return -heatOutRate
+def calcWeightedAverage(mass1, temp1, mass2, temp2):
+    return (mass1 * temp1 + mass2 * temp2) / (mass1 + mass2)
 
-
-# for numerical methods stuff
-hotTemp_previous  = 10
-coldTemp_previous = 10
-hotTemp_converge = -1
-coldTemp_converge = -1
-hotTemp_converge_flag = False
-coldTemp_converge_flag = False
-
-
-
-
-# Define Thermodynamic Constants
-specificHeatWater = 4.184 # kJ/(kg * C)
-densityWater = 1000 # kg/m^3
+###################
+### ENTRY POINT ###
+###################
 
 # Parse Parameters File
 parameterFile = open("parameters.txt", "r")
@@ -24,23 +21,38 @@ for line in parameterFile:
     words = line.strip().split(",")
     p[words[0]] = words[1]
 parameterFile.close()
+stepSize = float(p["step size (sec)"])
+heatInRate = float(p["heat in (kWatts)"])
+heatOutRate = float(p["heat out (kWatts)"])
+massFlow = float(p["mass flow rate (kg/sec)"])
+hotTemp = float(p["initial hot temp (C)"])
+coldTemp = float(p["initial cold temp (C)"])
+heaterVolume = float(p["heating element volume (m^3)"])
+tankVolume = float(p["storage tank volume (m^3)"])
+duration = float(p["run time (sec)"])
+convergenceCriteria = float(p["converge criteria (unitless)"])
+stopOnConverge_int = int(p["stop on convergence (0=false 1=true)"])
+stopOnConverge = False
+if stopOnConverge_int == 1:
+    stopOnConverge = True
 
-stepSize = float(p["step size"]) # sec
-heatIn = float(p["heat in"]) # kWatts
-heatOut = float(p["heat out"]) #kWatts
-massFlow = float(p["mass flow rate"]) # kg / sec
-hotTemp = float(p["initial hot temp"]) # Celsius (initial temperature of hot water)
-coldTemp = float(p["initial cold temp"]) # Celsius (initial temperature of cold water)
-heaterVolume = float(p["heating element volume"])# m^3
-tankVolume = float(p["storage tank volume"]) # m^3
-duration = float(p["run time"]) # sec
-convergenceCriteria = float(p["converge criteria"]) # unit less
+# Define Thermodynamic Constants
+specificHeatWater = 4.184 # kJ/(kg * C)
+densityWater = 1000 # kg/m^3
 
 # Generate Run-Time Parameters
 fidelity = stepSize * massFlow # kg
 iterations = duration * massFlow / fidelity # unitless
 heaterMass = heaterVolume * densityWater # kg
 tankMass = tankVolume * densityWater #kg
+
+# Define Variables for Determine Convergence
+hotTemp_previous  = 10
+coldTemp_previous = 10
+hotTemp_converge = -1
+coldTemp_converge = -1
+hotTemp_converge_flag = False
+coldTemp_converge_flag = False
 
 # Open Data Output File
 logFileName = "data.csv"
@@ -55,20 +67,19 @@ log.write(headers)
 
 # Run Simulation
 for i in range(int(iterations)):
-    # print("Iteration " + str(i) + ":")
-    # step 1: mix water from pipe with water in heater
-    hotTemp = (fidelity * coldTemp + (heaterMass - fidelity) * hotTemp) / heaterMass # a weighted average, see appendix 1 for derivation, equation 1, whatever
+    row = [str(i), str(i * stepSize)]
+    # step 1: mix water from pipe with water in heater.
+    hotTemp = calcWeightedAverage(fidelity, coldTemp, heaterMass - fidelity, hotTemp)
 
     # step 2: add heat to ALL  water in heater
-    addedHeat = heatIn * stepSize
+    addedHeat = calcHeatInRate(heatInRate) * stepSize
     hotTemp = hotTemp + addedHeat / (heaterMass * specificHeatWater)
-    #print("   hotTemp: " + str(hotTemp))
 
     # step 3: add warm water to tank
-    coldTemp = (fidelity * hotTemp + (tankMass - fidelity) * coldTemp) / tankMass
+    coldTemp = calcWeightedAverage(fidelity, hotTemp, tankMass - fidelity, coldTemp)
 
     # step 4: remove heat from ALL water in tank
-    addedHeat = heatOut * stepSize
+    addedHeat = -heatOutRate * stepSize
     coldTemp = coldTemp + addedHeat / (tankMass * specificHeatWater)
 
     # report
