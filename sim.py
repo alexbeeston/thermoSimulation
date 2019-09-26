@@ -18,6 +18,12 @@ def buildRowString(vals):
     row += "\n"
     return row
 
+def checkOverHeating(max, temp, stepSize, iteration, portion):
+    if temp > max:
+        print("Error: The system overheated in the " + portion + " region on iteration " + str(iteration) + ", which maps to time = " + str(stepSize * iteration) + " seconds.")
+        print("The temperature in the " + str(portion) + " region was " + str(temp) + " degrees celsius, and the maximum permissible temperature was " + str(max) + ".")
+        sys.exit()
+
 ###################
 ### ENTRY POINT ###
 ###################
@@ -42,6 +48,7 @@ heaterVolume = float(p["heating element volume (m^3)"])
 tankVolume = float(p["storage tank volume (m^3)"])
 duration = float(p["run time (sec)"])
 convergenceCriteria = float(p["converge criteria (unitless)"])
+overHeatTemp = float(p["overheating temperature"])
 stopOnConverge_int = int(p["stop on convergence (0=false 1=true)"])
 stopOnConverge = False
 if stopOnConverge_int == 1:
@@ -72,21 +79,15 @@ if hotTemp > 100:
 if coldTemp > 100:
     print("Parameter error: The initial cold temp is larger than 100 degrees celsius. Enter a value in the range (0, 100)")
     sys.exit()
-
-
-'''
-
-overheating tank throughout the simulation
-
-'''
+if overHeatTemp > 100:
+    print("Parmeter error: The overheating temperature is greater than 100 degrees celsius. This simulation only support liquid fluids.")
+    sys.exit()
 
 # Generate Run-Time Parameters
 fidelity = stepSize * massFlow # kg
 iterations = duration * massFlow / fidelity # unitless
 heaterMass = heaterVolume * densityWater # kg
 tankMass = tankVolume * densityWater #kg
-print("heater mass" + str(heaterMass))
-print("fidelity: " + str(fidelity))
 
 # Define Variables for Determine Convergence
 hotTemp_previous  = 10
@@ -112,15 +113,19 @@ log.write("0,0," + str(hotTemp) + "," + str(coldTemp) + "\n")
 for i in range(int(iterations)):
     # step 1 of simulation: mix cold water into the heater
     hotTemp = calcWeightedAverage(fidelity, coldTemp, heaterMass - fidelity, hotTemp)
+    checkOverHeating(overHeatTemp, hotTemp, stepSize, i + 1, "warm")
 
     # step 2 of simulation: add heat to water in the heater
     hotTemp = addHeat(hotTemp, heatInRate * stepSize, specificHeatWater, heaterMass)
+    checkOverHeating(overHeatTemp, hotTemp, stepSize, i + 1, "warm")
 
     # step 3 of simulation: mix hot water into the tank
     coldTemp = calcWeightedAverage(fidelity, hotTemp, tankMass - fidelity, coldTemp)
+    checkOverHeating(overHeatTemp, hotTemp, stepSize, i + 1, "cool")
 
     # step 4 of simulation: remove heat from water in the tank
     coldTemp = addHeat(coldTemp, -(heatOutRate * stepSize), specificHeatWater, tankMass)
+    checkOverHeating(overHeatTemp, hotTemp, stepSize, i + 1, "cool")
 
     # build report
     row = buildRowString([i + 1, (i + 1) * stepSize, hotTemp, coldTemp])
