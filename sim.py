@@ -1,14 +1,14 @@
 import sys
 
-stepSize = .0001 # sec
-heatRate = 50 # kWatts
+stepSize = 1 # sec
+heatRate = 1000 # kWatts - separate into two
 massFlow = 5 # kg / sec
 temp1 = 20 # Celsius (initial temperature of hot water)
-temp2 = 50 # Celsius (initial temperature of cold water)
-massSolar = 15 # kg
-massTank = 100 # kg
+temp2 = 12 # Celsius (initial temperature of cold water)
+massSolar = 25 # kg
+massTank = 750 # kg
 specificHeat = 4.184 # kJ/(kg * C)
-duration = 60 # sec
+duration = 5000 # sec
 convergeCriteria = .001 # unit less
 
 # for numerical methods stuff
@@ -22,7 +22,8 @@ temp2_converge_flag = False
 # BEGIN
 fidelity = stepSize * massFlow # kg
 iterations = duration * massFlow / fidelity # unit less
-
+log = open("log.txt", "w")
+headers = "iteration,timeStamp,Q_in,temp_1,Q_out,temp_2"
 for i in range(int(iterations)):
     # print("Iteration " + str(i) + ":")
     # step 1: mix water from pipe with water in heater
@@ -41,10 +42,7 @@ for i in range(int(iterations)):
     temp2 = temp2 + addedHeat / (massTank * specificHeat)
 
     # report
-    #print("   temp2: " + str(temp2))
-    #print("   ---")
-    #print("   temp1 difference: " + str(temp1_previous - temp1))
-    #print("   temp2 difference: " + str(temp2_previous - temp2))
+
 
     if abs(temp1_previous - temp1) < convergeCriteria and not temp1_converge_flag:
         temp1_converge = i
@@ -70,7 +68,7 @@ if temp2_converge_flag:
     print("temp2 converged after " + str(temp2_converge + 1) + " iterations, which maps to " + str(temp2_converge * stepSize) + " seconds of run time.")
 else:
     print("temp2 did not converge. Final difference: " + str(abs(temp2_previous - temp2)))
-
+log.close()
 
 '''
 BUG:
