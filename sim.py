@@ -1,4 +1,5 @@
 import sys
+import matplotlib.pyplot as plt
 
 ########################
 ### HELPER FUNCTIONS ###
@@ -18,11 +19,30 @@ def buildRowString(vals):
     row += "\n"
     return row
 
-def checkOverHeating(max, temp, stepSize, iteration, portion):
+def checkTempExtremes(max, min, temp, stepSize, iteration, portion):
     if temp > max:
         print("Error: The system overheated in the " + portion + " region on iteration " + str(iteration) + ", which maps to time = " + str(stepSize * iteration) + " seconds.")
         print("The temperature in the " + str(portion) + " region was " + str(temp) + " degrees celsius, and the maximum permissible temperature was " + str(max) + ".")
-        sys.exit()
+        return False
+    elif temp < min:
+        print("Error: The system temperature fell beneath the minimum permissible temperature in the " + portion + " region on iteration " + str(iteration) + ", which maps to time = " + str(stepSize * iteration) + " seconds.")
+        print("The temperature in the " + str(portion) + " region was " + str(temp) + " degrees celsius, and the minimum permissible temperature was " + str(min) + ".")
+        return False
+    else:
+        return True
+
+def graphResults(times, hotTemperatures, coldTemperatures):
+    try:
+        plt.plot(times, hotTemperatures, label='Hot Temperatures', color='red')
+        plt.plot(times, coldTemperatures, label='Cold Temperatures', color='blue')
+        plt.xlabel("Time (minutes)")
+        plt.ylabel("Temperature (deg celsius)")
+        plt.title("Thermodynamic Simulation")
+        plt.legend(loc='best')
+        plt.show()
+    except:
+        print(
+            "The graph of the data could not be generated. Try running the command \"pip install matplotlib\" to install the necessary modules")
 
 ###################
 ### ENTRY POINT ###
@@ -42,13 +62,14 @@ stepSize = float(p["step size (sec)"])
 heatInRate = float(p["heat in (kWatts)"])
 heatOutRate = float(p["heat out (kWatts)"])
 massFlow = float(p["mass flow rate (kg/sec)"])
-hotTemp = float(p["initial hot temp (C)"])
-coldTemp = float(p["initial cold temp (C)"])
+hotTemp = float(p["initial hot temp (cel)"])
+coldTemp = float(p["initial cold temp (cel)"])
 heaterVolume = float(p["heating element volume (m^3)"])
 tankVolume = float(p["storage tank volume (m^3)"])
-duration = float(p["run time (sec)"])
+duration = float(p["run time (min)"]) * 60
 convergenceCriteria = float(p["converge criteria (unitless)"])
-overHeatTemp = float(p["overheating temperature"])
+maxTemp = float(p["maximum permissible temperature"])
+minTemp = float(p["minimum permissible temperature"])
 stopOnConverge_int = int(p["stop on convergence (0=false 1=true)"])
 stopOnConverge = False
 if stopOnConverge_int == 1:
@@ -79,8 +100,11 @@ if hotTemp > 100:
 if coldTemp > 100:
     print("Parameter error: The initial cold temp is larger than 100 degrees celsius. Enter a value in the range (0, 100)")
     sys.exit()
-if overHeatTemp > 100:
-    print("Parmeter error: The overheating temperature is greater than 100 degrees celsius. This simulation only support liquid fluids.")
+if maxTemp > 100:
+    print("Parameter error: The maximum permissible temperature is greater than 100 degrees celsius. This simulation only support liquid fluids.")
+    sys.exit()
+if maxTemp < minTemp:
+    print("Parameter error: The maximum permissible temperature is less than the minimum permissible temperature")
     sys.exit()
 
 # Generate Run-Time Parameters
@@ -89,9 +113,9 @@ iterations = duration * massFlow / fidelity # unitless
 heaterMass = heaterVolume * densityWater # kg
 tankMass = tankVolume * densityWater #kg
 
-# Define Variables for Determine Convergence
-hotTemp_previous  = 10
-coldTemp_previous = 10
+# Define Variables Used for Determine Convergence
+hotTemp_previous  = hotTemp
+coldTemp_previous = hotTemp
 hotTemp_converge = -1
 coldTemp_converge = -1
 hotTemp_converge_flag = False
@@ -104,48 +128,66 @@ if len(sys.argv) > 2:
     sys.exit()
 elif len(sys.argv) == 2:
     logFileName = sys.argv[1]
-log = open(logFileName, "w")
+dataFile = open(logFileName, "w")
 headers = "Iteration,Time Stamp (sec),Hot Temperature (Cel),Cold Temperature (Cel)\n"
-log.write(headers)
-log.write("0,0," + str(hotTemp) + "," + str(coldTemp) + "\n")
+dataFile.write(headers)
+dataFile.write("0,0," + str(hotTemp) + "," + str(coldTemp) + "\n")
 
+# initialize simulation data and flow control variables
+times = [0]
+hotTemperatures = [hotTemp]
+coldTemperatures = [coldTemp]
+i = 0
+keepGoing = True
 # Run Simulation
-for i in range(int(iterations)):
+while i < int(iterations) and keepGoing:
     # step 1 of simulation: mix cold water into the heater
     hotTemp = calcWeightedAverage(fidelity, coldTemp, heaterMass - fidelity, hotTemp)
-    checkOverHeating(overHeatTemp, hotTemp, stepSize, i + 1, "warm")
+    keepGoing = checkTempExtremes(maxTemp, minTemp, hotTemp, stepSize, i + 1, "warm")
 
     # step 2 of simulation: add heat to water in the heater
-    hotTemp = addHeat(hotTemp, heatInRate * stepSize, specificHeatWater, heaterMass)
-    checkOverHeating(overHeatTemp, hotTemp, stepSize, i + 1, "warm")
+    if keepGoing:
+        hotTemp = addHeat(hotTemp, heatInRate * stepSize, specificHeatWater, heaterMass)
+        keepGoing = checkTempExtremes(maxTemp, minTemp, hotTemp, stepSize, i + 1, "warm")
 
     # step 3 of simulation: mix hot water into the tank
-    coldTemp = calcWeightedAverage(fidelity, hotTemp, tankMass - fidelity, coldTemp)
-    checkOverHeating(overHeatTemp, hotTemp, stepSize, i + 1, "cool")
+    if keepGoing:
+        coldTemp = calcWeightedAverage(fidelity, hotTemp, tankMass - fidelity, coldTemp)
+        keepGoing = checkTempExtremes(maxTemp, minTemp, hotTemp, stepSize, i + 1, "cool")
 
     # step 4 of simulation: remove heat from water in the tank
-    coldTemp = addHeat(coldTemp, -(heatOutRate * stepSize), specificHeatWater, tankMass)
-    checkOverHeating(overHeatTemp, hotTemp, stepSize, i + 1, "cool")
+    if keepGoing:
+        coldTemp = addHeat(coldTemp, -(heatOutRate * stepSize), specificHeatWater, tankMass)
+        keepGoing = checkTempExtremes(maxTemp, minTemp, hotTemp, stepSize, i + 1, "cool")
 
-    # build report
+    # log data
     row = buildRowString([i + 1, (i + 1) * stepSize, hotTemp, coldTemp])
-    log.write(row)
+    dataFile.write(row)
+    times.append(((i + 1) * stepSize) / 60)
+    hotTemperatures.append(hotTemp)
+    coldTemperatures.append(coldTemp)
 
-
+    # check for convergence
     if abs(hotTemp_previous - hotTemp) < convergenceCriteria and not hotTemp_converge_flag:
         hotTemp_converge = i
         hotTemp_converge_flag = True
     else:
         hotTemp_previous = hotTemp
-
     if abs(coldTemp_previous - coldTemp) < convergenceCriteria and not coldTemp_converge_flag:
         coldTemp_converge = i
         coldTemp_converge_flag = True
     else:
         coldTemp_previous = coldTemp
+    i += 1
 
-log.close()
 
+dataFile.close()
+graphResults(times, hotTemperatures, coldTemperatures)
+
+# log the results of the computation
+log = open("log.txt", "w")
+log.write("Initial hot temperature: " + p["initial hot temp (cel)"] + "\n")
+log.write("Initial cold temperature: " + p["initial cold temp (cel)"] + "\n")
 
 
 print("For step size = " + str(stepSize) + " (used " + str(iterations) + " iterations).")

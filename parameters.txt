@@ -1,12 +1,13 @@
-step size (sec),.01
-heat in (kWatts),1000
-heat out (kWatts),1000
+step size (sec),2
+heat in (kWatts),0
+heat out (kWatts),400
 mass flow rate (kg/sec),5
-initial hot temp (C),24
-initial cold temp (C),24
-heating element volume (m^3),.025
-storage tank volume (m^3),5
-run time (sec),1500
+initial hot temp (cel),30
+initial cold temp (cel),30
+heating element volume (m^3),1.85
+storage tank volume (m^3),2
+run time (min),60
 converge criteria (unitless),.001
 stop on convergence (0=false 1=true),1
-overheating temperature,70
+maximum permissible temperature,90
+minimum permissible temperature,15

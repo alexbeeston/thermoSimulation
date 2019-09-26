@@ -1,0 +1,2 @@
+Initial hot temperature: 30
+Initial cold temperature: 30
