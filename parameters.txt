@@ -1,0 +1,10 @@
+step size,3
+heat in,1000
+heat out,-1000
+mass flow rate,5
+initial hot temp,20
+initial cold temp,12
+heating element volume,.025
+storage tank volume,.75
+run time,999
+converge criteria,.001
