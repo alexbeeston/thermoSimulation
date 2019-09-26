@@ -2,8 +2,8 @@ step size (sec),2
 heat in (kWatts),200
 heat out (kWatts),200
 mass flow rate (kg/sec),5
-initial hot temp (cel),20
-initial cold temp (cel),30
+initial warm temp (cel),20
+initial cool temp (cel),30
 heating element volume (m^3),.5
 storage tank volume (m^3),2
 run time (min),30

@@ -40,10 +40,10 @@ def checkTempExtremes(max, min, temp, stepSize, iteration, portion):
     else:
         return True
 
-def graphResults(times, hotTemperatures, coldTemperatures):
+def graphResults(times, warmTemperatures, coolTemperatures):
     try:
-        plt.plot(times, hotTemperatures, label='Hot Temperatures', color='red')
-        plt.plot(times, coldTemperatures, label='Cold Temperatures', color='blue')
+        plt.plot(times, warmTemperatures, label='warm temperature region', color='red')
+        plt.plot(times, coolTemperatures, label='cool temperature region', color='blue')
         plt.xlabel("Time (minutes)")
         plt.ylabel("Temperature (deg celsius)")
         plt.title("Thermodynamic Simulation")
@@ -55,12 +55,12 @@ def graphResults(times, hotTemperatures, coldTemperatures):
 
 def openDataFile():
     dataFile = open(getdataFileName(), "w")
-    headers = "Iteration,Time Stamp (sec),Hot Temperature (Cel),Cold Temperature (Cel)\n"
+    headers = "Iteration,Time Stamp (sec),warm Temperature (Cel),cool Temperature (Cel)\n"
     dataFile.write(headers)
-    dataFile.write("0,0," + str(hotTemp) + "," + str(coldTemp) + "\n")
+    dataFile.write("0,0," + str(warmTemp) + "," + str(coolTemp) + "\n")
     return dataFile
 
-def validate(stepSize, massFlow, hotTemp, coldTemp, heaterVolume, tankVolume, duration, maxTemp, minTemp, p):
+def validate(stepSize, massFlow, warmTemp, coolTemp, heaterVolume, tankVolume, duration, maxTemp, minTemp, p):
     for pair in p.items():
         if float(pair[1]) < 0:
             print("Parameter Error: \"" + pair[0] + "\" must be greater than zero.")
@@ -76,11 +76,11 @@ def validate(stepSize, massFlow, hotTemp, coldTemp, heaterVolume, tankVolume, du
     if stepSize > duration:
         print("Parameter error: The step size is larger than the run time. The step size must be smaller than the runn time of the simulation")
         sys.exit()
-    if hotTemp > 100:
-        print("Parameter error: The initial hot temp is larger than 100 degrees celsius. Enter a value in the range (0, 100)")
+    if warmTemp > 100:
+        print("Parameter error: The initial warm temp is larger than 100 degrees celsius. Enter a value in the range (0, 100)")
         sys.exit()
-    if coldTemp > 100:
-        print("Parameter error: The initial cold temp is larger than 100 degrees celsius. Enter a value in the range (0, 100)")
+    if coolTemp > 100:
+        print("Parameter error: The initial cool temp is larger than 100 degrees celsius. Enter a value in the range (0, 100)")
         sys.exit()
     if maxTemp > 100:
         print("Parameter error: The maximum permissible temperature is greater than 100 degrees celsius. This simulation only support liquid fluids.")
@@ -89,28 +89,28 @@ def validate(stepSize, massFlow, hotTemp, coldTemp, heaterVolume, tankVolume, du
         print("Parameter error: The maximum permissible temperature is less than the minimum permissible temperature")
         sys.exit()
 
-def printResults(iterations, hotTemp_previous, hotConvergeIteration, coldTemp_previous, coldConvergeIteration, stepSize, p):
+def printResults(iterations, warmTemp_previous, warmConvergeIteration, coolTemp_previous, coolConvergeIteration, stepSize, p):
     print("System Configurations:")
     print("   Simulated run time: " + str(duration / 60) + " min")
     print("   Step Size: " + p["step size (sec)"] + " sec")
     print("   Heat input: " + p["heat in (kWatts)"] + " kW")
     print("   Heat output: " + p["heat out (kWatts)"] + " kW")
     print("   Mass flow rate: " + p["mass flow rate (kg/sec)"] + " kg/sec")
-    print("   Initial hot temperature: " + p["initial hot temp (cel)"] + " deg C")
-    print("   Initial cold temperature: " + p["initial cold temp (cel)"] + " deg C")
+    print("   Initial warm temperature: " + p["initial warm temp (cel)"] + " deg C")
+    print("   Initial cool temperature: " + p["initial cool temp (cel)"] + " deg C")
     print("   Volume of heating element: " + p["heating element volume (m^3)"] + " m^3")
     print("   Volume of storage tank: " + p["storage tank volume (m^3)"] + " m^3")
     print("   Convergence criteria used: " + p["converge criteria (unitless)"])
     print("   Maximum permissible temperature: " + p["maximum permissible temperature (cel)"] + " deg C")
     print("   Minimum permissible termperature: " + p["minimum permissible temperature (cel)"] + " deg C")
-    if hotConvergeIteration < iterations:
-        print("The warm region converged to a temperature of " + str(hotTemp_previous) + " on iteration " + str(hotConvergeIteration) + ", which maps to " + str(hotConvergeIteration * stepSize / 60) + " minutes of simulation time.")
+    if warmConvergeIteration < iterations:
+        print("The warm region converged to a temperature of " + str(warmTemp_previous) + " on iteration " + str(warmConvergeIteration) + ", which maps to " + str(warmConvergeIteration * stepSize / 60) + " minutes of simulation time.")
     else:
-        print("The warm region did not converge. The final temperature was " + str(hotTemp_previous) + " degrees celsius.")
-    if coldConvergeIteration < iterations:
-        print("The cool region converged to a temperature of " + str(coldTemp_previous) + " on iteration " + str(coldConvergeIteration) + ", which maps to " + str(coldConvergeIteration * stepSize / 60) + " minutes of simulation time.")
+        print("The warm region did not converge. The final temperature was " + str(warmTemp_previous) + " degrees celsius.")
+    if coolConvergeIteration < iterations:
+        print("The cool region converged to a temperature of " + str(coolTemp_previous) + " on iteration " + str(coolConvergeIteration) + ", which maps to " + str(coolConvergeIteration * stepSize / 60) + " minutes of simulation time.")
     else:
-        print("The cool region did not converge. The final temperature was " + str(coldTemp_previous) + " degrees celsius.")
+        print("The cool region did not converge. The final temperature was " + str(coolTemp_previous) + " degrees celsius.")
     print("See the file " + getdataFileName() + " for a complete report of the temperatures.")
 
 ###################
@@ -122,7 +122,7 @@ specificHeatWater = 4.184 # kJ/(kg * C)
 densityWater = 1000 # kg/m^3
 
 # parse parameter file
-parameterFile = open("parameters.txt", "r")
+parameterFile = open("configs.txt", "r")
 p = {}
 for line in parameterFile:
     words = line.strip().split(",")
@@ -132,15 +132,15 @@ stepSize = float(p["step size (sec)"])
 heatInRate = float(p["heat in (kWatts)"])
 heatOutRate = float(p["heat out (kWatts)"])
 massFlow = float(p["mass flow rate (kg/sec)"])
-hotTemp = float(p["initial hot temp (cel)"])
-coldTemp = float(p["initial cold temp (cel)"])
+warmTemp = float(p["initial warm temp (cel)"])
+coolTemp = float(p["initial cool temp (cel)"])
 heaterVolume = float(p["heating element volume (m^3)"])
 tankVolume = float(p["storage tank volume (m^3)"])
 duration = float(p["run time (min)"]) * 60
 convergenceCriteria = float(p["converge criteria (unitless)"])
 maxTemp = float(p["maximum permissible temperature (cel)"])
 minTemp = float(p["minimum permissible temperature (cel)"])
-validate(stepSize, massFlow, hotTemp, coldTemp, heaterVolume, tankVolume, duration, maxTemp, minTemp, p)
+validate(stepSize, massFlow, warmTemp, coolTemp, heaterVolume, tankVolume, duration, maxTemp, minTemp, p)
 
 # generate run-time parameters
 fidelity = stepSize * massFlow # kg
@@ -149,63 +149,63 @@ heaterMass = heaterVolume * densityWater # kg
 tankMass = tankVolume * densityWater #kg
 
 # define variables used for determining convergence
-hotTemp_previous  = hotTemp
-coldTemp_previous = hotTemp
-hotConvergeIteration = -1
-coldConvergeIteration = -1
-hotFlag = False
-coldFlag = False
+warmTemp_previous  = warmTemp
+coolTemp_previous = warmTemp
+warmConvergeIteration = -1
+coolConvergeIteration = -1
+warmFlag = False
+coolFlag = False
 
 # initialize simulation data, flow control variables, and open log file
 times = [0]
-hotTemperatures = [hotTemp]
-coldTemperatures = [coldTemp]
+warmTemperatures = [warmTemp]
+coolTemperatures = [coolTemp]
 i = 0
 keepGoing = True
 dataFile = openDataFile()
 
 # Run Simulation
 while i < int(iterations) and keepGoing:
-    # step 1 of simulation: mix cold water into the heater
-    hotTemp = calcWeightedAverage(fidelity, coldTemp, heaterMass - fidelity, hotTemp)
-    keepGoing = checkTempExtremes(maxTemp, minTemp, hotTemp, stepSize, i + 1, "warm")
+    # step 1 of simulation: mix cool water into the heater
+    warmTemp = calcWeightedAverage(fidelity, coolTemp, heaterMass - fidelity, warmTemp)
+    keepGoing = checkTempExtremes(maxTemp, minTemp, warmTemp, stepSize, i + 1, "warm")
 
     # step 2 of simulation: add heat to water in the heater
     if keepGoing:
-        hotTemp = addHeat(hotTemp, heatInRate * stepSize, specificHeatWater, heaterMass)
-        keepGoing = checkTempExtremes(maxTemp, minTemp, hotTemp, stepSize, i + 1, "warm")
+        warmTemp = addHeat(warmTemp, heatInRate * stepSize, specificHeatWater, heaterMass)
+        keepGoing = checkTempExtremes(maxTemp, minTemp, warmTemp, stepSize, i + 1, "warm")
 
-    # step 3 of simulation: mix hot water into the tank
+    # step 3 of simulation: mix warm water into the tank
     if keepGoing:
-        coldTemp = calcWeightedAverage(fidelity, hotTemp, tankMass - fidelity, coldTemp)
-        keepGoing = checkTempExtremes(maxTemp, minTemp, hotTemp, stepSize, i + 1, "cool")
+        coolTemp = calcWeightedAverage(fidelity, warmTemp, tankMass - fidelity, coolTemp)
+        keepGoing = checkTempExtremes(maxTemp, minTemp, warmTemp, stepSize, i + 1, "cool")
 
     # step 4 of simulation: remove heat from water in the tank
     if keepGoing:
-        coldTemp = addHeat(coldTemp, -(heatOutRate * stepSize), specificHeatWater, tankMass)
-        keepGoing = checkTempExtremes(maxTemp, minTemp, hotTemp, stepSize, i + 1, "cool")
+        coolTemp = addHeat(coolTemp, -(heatOutRate * stepSize), specificHeatWater, tankMass)
+        keepGoing = checkTempExtremes(maxTemp, minTemp, warmTemp, stepSize, i + 1, "cool")
 
     # log data
-    row = buildRowString([i + 1, (i + 1) * stepSize, hotTemp, coldTemp])
+    row = buildRowString([i + 1, (i + 1) * stepSize, warmTemp, coolTemp])
     dataFile.write(row)
     times.append(((i + 1) * stepSize) / 60)
-    hotTemperatures.append(hotTemp)
-    coldTemperatures.append(coldTemp)
+    warmTemperatures.append(warmTemp)
+    coolTemperatures.append(coolTemp)
 
     # check for convergence
-    if abs(hotTemp_previous - hotTemp) < convergenceCriteria and not hotFlag:
-        hotFlag = True
-        hotConvergeIteration = i
-    elif not hotFlag:
-        hotTemp_previous = hotTemp
-    if abs(coldTemp_previous - coldTemp) < convergenceCriteria and not coldFlag:
-        coldFlag = True
-        coldConvergeIteration = i
-    elif not coldFlag:
-        coldTemp_previous = coldTemp
+    if abs(warmTemp_previous - warmTemp) < convergenceCriteria and not warmFlag:
+        warmFlag = True
+        warmConvergeIteration = i
+    elif not warmFlag:
+        warmTemp_previous = warmTemp
+    if abs(coolTemp_previous - coolTemp) < convergenceCriteria and not coolFlag:
+        coolFlag = True
+        coolConvergeIteration = i
+    elif not coolFlag:
+        coolTemp_previous = coolTemp
     i += 1
 
 # log and visualize data
 dataFile.close()
-printResults(iterations, hotTemp_previous, hotConvergeIteration, coldTemp_previous, coldConvergeIteration, stepSize, p)
-graphResults(times, hotTemperatures, coldTemperatures)
+printResults(iterations, warmTemp_previous, warmConvergeIteration, coolTemp_previous, coolConvergeIteration, stepSize, p)
+graphResults(times, warmTemperatures, coolTemperatures)

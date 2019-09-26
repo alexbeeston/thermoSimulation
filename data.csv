@@ -1,4 +1,4 @@
-Iteration,Time Stamp (sec),Hot Temperature (Cel),Cold Temperature (Cel)
+Iteration,Time Stamp (sec),warm Temperature (Cel),cool Temperature (Cel)
 0,0,20.0,30.0
 1,2.0,20.39120458891013,29.90415487571702
 2,4.0,20.7726681835564,29.81069629502868
