@@ -3,7 +3,7 @@ heat in (kWatts),1000
 heat out (kWatts),1000
 mass flow rate (kg/sec),5
 initial hot temp (C),20
-initial cold temp (C),12
+initial cold temp (C),15
 heating element volume (m^3),.025
 storage tank volume (m^3),.75
 run time (sec),999

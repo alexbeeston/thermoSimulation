@@ -1,14 +1,22 @@
 import sys
 
-#################################
-### EXTENSIBLE HELP FUNCTIONS ###
-#################################
-def calcHeatInRate(heatInRate):
-    return heatInRate
-def calcRemovedHeat(heatOutRate):
-    return -heatOutRate
+########################
+### HELPER FUNCTIONS ###
+########################
 def calcWeightedAverage(mass1, temp1, mass2, temp2):
     return (mass1 * temp1 + mass2 * temp2) / (mass1 + mass2)
+
+def addHeat(oldTemp, heat, specificHeat, mass):
+    return oldTemp + heat / (mass * specificHeat)
+
+def buildRowString(vals):
+    row = ""
+    for j in range(len(vals)):
+        row += str(vals[j])
+        if j != len(vals) - 1:
+            row += ","
+    row += "\n"
+    return row
 
 ###################
 ### ENTRY POINT ###
@@ -45,6 +53,8 @@ fidelity = stepSize * massFlow # kg
 iterations = duration * massFlow / fidelity # unitless
 heaterMass = heaterVolume * densityWater # kg
 tankMass = tankVolume * densityWater #kg
+print("heater mass" + str(heaterMass))
+print("fidelity: " + str(fidelity))
 
 # Define Variables for Determine Convergence
 hotTemp_previous  = 10
@@ -62,27 +72,27 @@ if len(sys.argv) > 2:
 elif len(sys.argv) == 2:
     logFileName = sys.argv[1]
 log = open(logFileName, "w")
-headers = "iteration,timeStamp,Q_in,temp_1,Q_out,temp_2"
+headers = "Iteration,Time Stamp (sec),Hot Temperature (Cel),Cold Temperature (Cel)\n"
 log.write(headers)
+log.write("0,0," + str(hotTemp) + "," + str(coldTemp) + "\n")
 
 # Run Simulation
 for i in range(int(iterations)):
-    row = [str(i), str(i * stepSize)]
-    # step 1: mix water from pipe with water in heater.
+    # step 1 of simulation: mix cold water into the heater
     hotTemp = calcWeightedAverage(fidelity, coldTemp, heaterMass - fidelity, hotTemp)
 
-    # step 2: add heat to ALL  water in heater
-    addedHeat = calcHeatInRate(heatInRate) * stepSize
-    hotTemp = hotTemp + addedHeat / (heaterMass * specificHeatWater)
+    # step 2 of simulation: add heat to water in the heater
+    hotTemp = addHeat(hotTemp, heatInRate * stepSize, specificHeatWater, heaterMass)
 
-    # step 3: add warm water to tank
+    # step 3 of simulation: mix hot water into the tank
     coldTemp = calcWeightedAverage(fidelity, hotTemp, tankMass - fidelity, coldTemp)
 
-    # step 4: remove heat from ALL water in tank
-    addedHeat = -heatOutRate * stepSize
-    coldTemp = coldTemp + addedHeat / (tankMass * specificHeatWater)
+    # step 4 of simulation: remove heat from water in the tank
+    coldTemp = addHeat(coldTemp, -(heatOutRate * stepSize), specificHeatWater, tankMass)
 
-    # report
+    # build report
+    row = buildRowString([i + 1, (i + 1) * stepSize, hotTemp, coldTemp])
+    log.write(row)
 
 
     if abs(hotTemp_previous - hotTemp) < convergenceCriteria and not hotTemp_converge_flag:
