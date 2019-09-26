@@ -1,12 +1,12 @@
 step size (sec),2
-heat in (kWatts),200
-heat out (kWatts),200
+heat in (kWatts),400
+heat out (kWatts),400
 mass flow rate (kg/sec),5
-initial warm temp (cel),20
+initial warm temp (cel),30
 initial cool temp (cel),30
-heating element volume (m^3),.5
+heating element volume (m^3),1.85
 storage tank volume (m^3),2
-run time (min),30
+run time (min),20
 converge criteria (unitless),.001
-maximum permissible temperature (cel),70
-minimum permissible temperature (cel),5
+maximum permissible temperature (cel),90
+minimum permissible temperature (cel),15
