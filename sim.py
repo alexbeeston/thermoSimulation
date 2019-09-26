@@ -21,6 +21,9 @@ def buildRowString(vals):
 ###################
 ### ENTRY POINT ###
 ###################
+# Define Thermodynamic Constants
+specificHeatWater = 4.184 # kJ/(kg * C)
+densityWater = 1000 # kg/m^3
 
 # Parse Parameters File
 parameterFile = open("parameters.txt", "r")
@@ -44,9 +47,38 @@ stopOnConverge = False
 if stopOnConverge_int == 1:
     stopOnConverge = True
 
-# Define Thermodynamic Constants
-specificHeatWater = 4.184 # kJ/(kg * C)
-densityWater = 1000 # kg/m^3
+# Validate Parameters
+for pair in p.items():
+    if float(pair[1]) < 0:
+        print("Parameter Error: \"" + pair[0] + "\" must be greater than zero.")
+        sys.exit()
+if not (stopOnConverge_int == 0 or stopOnConverge_int == 1):
+    print("Parameter error: \"stop on convergence (0=false 1=true)\" must be set to either 0 or 1")
+    sys.exit()
+if stepSize * massFlow > densityWater * heaterVolume:
+    print("Parameter error: The step size is too large for the size of the heater.\nThe following comparison must hold: (stepSize * massFlowRate) < (densityWater * heaterElementVolume).")
+    print("Do at least one of the following:\n1) Decrease step size\n2) decrease mass flow rate\n3) increase volume of heating element")
+    sys.exit()
+if stepSize * massFlow > densityWater * tankVolume:
+    print("Parameter error: The step size is too large for the size of the tank.\nThe following comparison must hold: (stepSize * massFlowRate) < (densityWater * storageTankVolume).")
+    print("Do at least one of the following:\n1) Decrease step size\n2) decrease mass flow rate\n3) increase volume of storage tank")
+    sys.exit()
+if stepSize > duration:
+    print("Parameter error: The step size is larger than the run time. The step size must be smaller than the runn time of the simulation")
+    sys.exit()
+if hotTemp > 100:
+    print("Parameter error: The initial hot temp is larger than 100 degrees celsius. Enter a value in the range (0, 100)")
+    sys.exit()
+if coldTemp > 100:
+    print("Parameter error: The initial cold temp is larger than 100 degrees celsius. Enter a value in the range (0, 100)")
+    sys.exit()
+
+
+'''
+
+overheating tank throughout the simulation
+
+'''
 
 # Generate Run-Time Parameters
 fidelity = stepSize * massFlow # kg
@@ -108,6 +140,9 @@ for i in range(int(iterations)):
         coldTemp_previous = coldTemp
 
 log.close()
+
+
+
 print("For step size = " + str(stepSize) + " (used " + str(iterations) + " iterations).")
 print("Final hotTemp: " + str(hotTemp))
 print("Final coldTemp: " + str(coldTemp))
@@ -120,3 +155,4 @@ if coldTemp_converge_flag:
     print("coldTemp converged after " + str(coldTemp_converge + 1) + " iterations, which maps to " + str(coldTemp_converge * stepSize) + " seconds of run time.")
 else:
     print("coldTemp did not converge. Final difference: " + str(abs(coldTemp_previous - coldTemp)))
+
