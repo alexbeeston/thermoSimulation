@@ -42,19 +42,21 @@ The output of this program is the .csv file, which contains rows of data that re
 A brief summary of the convergence behavior of the program is also printed to the screen after the computation, along with a summary of the configurations used.
 
 ## Methodology 
-The computation is performed by considering the flow of a small mass of fluid, known in the source code as the "fidelity", through the system. The fidelity is measured in kilograms and is calculated by multiplying the step size (sec) by the mass flow rate (kg/sec). During each time step, a mass of water equal to the value of "fidelity" leaves and enters both the heating element and the storage tank. In the case of the heating element after this small amount of water leaves and is replenished by cooler water from the storage tank, the resulting temperature of the two fluids is computed by a weighted average, according to the equation m_a(T_{a1} - T_{a2}) = m_b(T_{b2} - T_{b1})
+The computation is performed by considering the flow of a small mass of fluid, known in the source code as the "fidelity", through the system. The fidelity is measured in kilograms and is calculated by multiplying the step size (sec) by the mass flow rate (kg/sec). During each time step, a mass of water equal to the value of "fidelity" leaves and enters both the heating element and the storage tank. In the case of the heating element after this small amount of water leaves and is replenished by cooler water from the storage tank, the resulting temperature of the two fluids is computed by a weighted average, according to the equation m_a(T_{a1} - T_{a2}) = m_b(T_{b2} - T_{b1}). Heat is then added to this mixture, and the resultant temperature is then re-computed according to the equation h = m*C_p*(T_2 - T_1). These two calculations are performed for fluid when it enters the tank, and the process is repeated iteratively. The program notes when the warm and cool temperatures converge, and reports those values at the end.
 
 ## Assumptions
-- well-mixed and insulated
-- kinetic energy from mixing does not increase the temperature of the water in the tank.
-
-## System Requirements
-- spell check this thing
-- Run the command "pip install matplotlib"
+The following assumptions are employed:
+- the pipes connecting the heating element and the storage tank are well-insulated such that no heat escapes from the pipes.
+- the work provided by the pump only maintains the kinetic energy of the system and does alter its temperature.
+- the system is frictionless
+- the fluids is well-mixed in all stages of the system such that the temperature is homogeneous in each part.
+- the work provided by an impeller in the storage tank only mixes the water and does not increase its temperature or otherwise provide energy to the system.
 
 ## Product Backlog
-- make the heat transfer a function of the material, the geometry of the vessles, and efficiency of the soloar panel, etc.
-- make it make decission about how much heat to let through
-- give the option of discontinuing the simulation after convergence to save computation time
-- set the convergence criteria to be triggered based on slop, not just a difference of 0, so that for non-steady state problems the convergence can be determined.
-- Include configurations for considerations regarding fluid mechanics (relative roughness of pipe, diameter and length of pipe,
+Eventually, it would be ideal to expand this project to include functionality for the following.
+- Rather than assuming a constant value for the rate of heat leaving the system, calculate the rate of heat transfer leaving the system as a function of the temperature gradient between the storage tank and the environment or target material, the coefficients of heat transfer of the material of the tank, the geometry of the tank, etc.
+- Calculate the rate at which heat enters the system as a function of the efficiency of the solar panel, the area of the solar panel, the area of the heating tank, the time of day, etc.
+- Model the heat sink as a object which must be maintained at a certain temperature, and then set the increase or decrease the solar panel's efficiency when the object's temperature needs to be raised or lowered, respectively.
+- Terminate the simulation early when the convergence criteria has been met and copy the converge values for the rest of the simulation to save computational resources.
+- Calculate the convergence of the system by the slope of the curve rather than the difference between data points. This way, the program can detect convergence for non steady-state systems.
+- Include configurations relating to fluid mechanics, such as the pipe's relative roughness, diameter, length, etc.
