@@ -185,12 +185,12 @@ while i < int(iterations) and keepGoing:
     # step 3 of simulation: mix warm water into the tank
     if keepGoing:
         coolTemp = calcWeightedAverage(fidelity, warmTemp, tankMass - fidelity, coolTemp)
-        keepGoing = checkTempExtremes(maxTemp, minTemp, warmTemp, stepSize, i + 1, "cool")
+        keepGoing = checkTempExtremes(maxTemp, minTemp, coolTemp, stepSize, i + 1, "cool")
 
     # step 4 of simulation: remove heat from water in the tank
     if keepGoing:
         coolTemp = addHeat(coolTemp, -(heatOutRate * stepSize), specificHeatWater, tankMass)
-        keepGoing = checkTempExtremes(maxTemp, minTemp, warmTemp, stepSize, i + 1, "cool")
+        keepGoing = checkTempExtremes(maxTemp, minTemp, coolTemp, stepSize, i + 1, "cool")
 
     # log data
     row = buildRowString([i + 1, (i + 1) * stepSize, warmTemp, coolTemp, getEnthalpy(warmTemp, specificHeatWater), getEnthalpy(coolTemp, specificHeatWater)])
