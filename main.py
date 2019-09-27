@@ -110,11 +110,11 @@ def printResults(iterations, warmTemp_previous, warmConvergeIteration, coolTemp_
     print("   Convergence criteria used: " + p["converge criteria (unitless)"])
     print("   Maximum permissible temperature: " + p["maximum permissible temperature (cel)"] + " deg C")
     print("   Minimum permissible termperature: " + p["minimum permissible temperature (cel)"] + " deg C")
-    if warmConvergeIteration < iterations:
+    if warmConvergeIteration != -1:
         print("The warm stream's temperature converged to " + str(warmTemp_previous) + " degrees celsius on iteration " + str(warmConvergeIteration) + ", which maps to " + str(warmConvergeIteration * stepSize / 60) + " minutes of simulation time.")
     else:
         print("The warm region did not converge. The final temperature was " + str(warmTemp_previous) + " degrees celsius.")
-    if coolConvergeIteration < iterations:
+    if coolConvergeIteration != -1:
         print("The cool stream's temperature converged to " + str(coolTemp_previous) + " degrees celsius on iteration " + str(coolConvergeIteration) + ", which maps to " + str(coolConvergeIteration * stepSize / 60) + " minutes of simulation time.")
     else:
         print("The cool region did not converge. The final temperature was " + str(coolTemp_previous) + " degrees celsius.")
