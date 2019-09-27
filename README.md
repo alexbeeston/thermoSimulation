@@ -1,7 +1,7 @@
 # Heat Exchanger Simulation
 
 ## Overview
-This program simulates a simple heat exchanger by calculating the temperature of water after absorbing heat in a small heater and then again after giving up heat in a large storage tank. The input parameters are configured in the file "configs.txt", and the output is written to a .csv file named "data.csv" or as specified as a command line argument. 
+This program simulates a simple heat exchanger by calculating the temperature of water after absorbing heat in a small heater and then again after giving up heat in a large storage tank. A "warm stream" flows from the heating element to the storage tank, and a "cool stream" flows from the storage tank back to the heating element. The input parameters are configured in the file "configs.txt", and the output is written to a .csv file named "data.csv" or as specified as a command line argument. 
 
 ## Run Instructions
 To properly use this program, do the following:
@@ -17,7 +17,7 @@ To properly use this program, do the following:
 All parameters to the system are configured in the file "configs.txt". The following is an explanation of each parameter:
 - step size (sec): the interval in seconds over which the calculations are made
 - heat in (kW) : the rate in kilowatts at which heat enters the system from the heating element. This value is seen from the perspective of the system, so only a positive value should be used.
-- heat out (k@) : the rate in kilowatts at which heat leaves the system from the storage tank. This value is seen from the perspective of the surroundings, so only positive value should be used.
+- heat out (kW) : the rate in kilowatts at which heat leaves the system from the storage tank. This value is seen from the perspective of the surroundings, so only positive value should be used.
 - mass flow rate (kg/sec) : the rate in kilograms per second at which the fluid (water) circulates through the system
 - initial warm temp (cel) : the initial temperature in celsius of the water directly after it leaves the heating element
 - initial cool temp (cel) : the initial temperature in celsius of the water directly after it leaves the storage tank. The cool initial temperature is not necessarily smaller than the warm initial temperature. In fact, some interesting results are shown when the initial cool temperature is greater than the initial warm temperature, as in the configurations in "sample1.txt".
@@ -42,7 +42,7 @@ The output of this program is the .csv file, which contains rows of data that re
 For convenience, a brief summary of the convergence behavior of the program is also printed to the screen after the computation, along with a summary of the configurations used.
 
 ## Methodology 
-The computation is performed by considering the flow of a small mass of fluid, known in the source code as the "fidelity", through the system. The fidelity is measured in kilograms and is calculated by multiplying the step size (sec) by the mass flow rate (kg/sec). During each time step, a mass of water equal to the value of "fidelity" leaves and enters both the heating element and the storage tank. In the case of the heating element, after this small amount of water leaves and is replenished by cooler water from the storage tank, the resulting temperature of the two fluids is computed by a weighted average according to the equation m_a(T_{a1} - T_{a2}) = m_b(T_{b2} - T_{b1}). Heat is then added to this mixture, and the resultant temperature is re-computed according to the equation h = m*C_p*(T_2 - T_1). These two calculations are also performed for fluid entering and leaving the tank, and the process is repeated iteratively. The program notes when the warm and cool temperatures converge and reports those values at the end of the computation.
+The computation is performed by considering the flow of a small mass of fluid, known in the source code as the "fidelity", through the system. The fidelity is measured in kilograms and is calculated by multiplying the step size (sec) by the mass flow rate (kg/sec). During each time step, a mass of water equal to the value of "fidelity" leaves and enters both the heating element and the storage tank. In the case of the heating element, after this small amount of water leaves and is replenished by cooler water from the storage tank, the resulting temperature of the two fluids is computed by a weighted average according to the equation m_a(T_{a2} - T_{a1}) = m_b(T_{b2} - T_{b1}). Heat is then added to this mixture, and the resultant temperature is re-computed according to the equation h = m*C_p*(T_2 - T_1). These two calculations are also performed for fluid entering and leaving the tank, and the process is repeated iteratively. The program notes when the warm and cool temperatures converge and reports those values at the end of the computation.
 
 ## Assumptions
 The following assumptions are employed:
@@ -54,8 +54,8 @@ The following assumptions are employed:
 ## Product Backlog
 Eventually, it would be ideal to expand this project to include functionality for the following:
 - Calculate the convergence of the system by the slope of the curve rather than the difference between data points. This way, the program can detect convergence for non steady-state systems.
-- Terminate the simulation early when the convergence criteria is been met and copy the converge values for the rest of the simulation to save computational resources.
+- Terminate the simulation early when the convergence criteria is met and copy the converge values for the rest of the simulation to save computational resources.
 - Include configurations relating to fluid mechanics, such as the pipe's relative roughness, diameter, length, etc.
-- Rather than assuming a constant value for the rate of heat leaving the system, calculate the rate of heat leaving the system as a function of the temperature gradient between the storage tank and the environment or target material, the coefficients of heat transfer of the material of the tank, the geometry of the tank, etc.
-- Calculate the rate at which heat enters the system as a function of the efficiency of the solar panel, the area of the solar panel, the area of the heating tank, the time of day, etc.
 - Model the heat sink as a object which must be maintained at a certain temperature, and then increase or decrease the solar panel's efficiency when the object's temperature needs to be raised or lowered, respectively.
+- Rather than assuming a constant value for the rate of heat leaving the system, calculate the rate of heat leaving the system as a function of the temperature gradient between the storage tank and the environment or target material, the coefficients of heat transfer of the material of the tank, the geometry of the tank, etc.
+- Calculate the rate at which heat enters the system as a function of the efficiency of the solar panel, the area of the solar panel, the area of the heating element, the time of day, etc.
