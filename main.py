@@ -45,8 +45,8 @@ def checkTempExtremes(max, min, temp, stepSize, iteration, portion):
 
 def graphResults(times, warmTemperatures, coolTemperatures):
     try:
-        plt.plot(times, warmTemperatures, label='warm temperature region', color='red')
-        plt.plot(times, coolTemperatures, label='cool temperature region', color='blue')
+        plt.plot(times, warmTemperatures, label='warm stream', color='red')
+        plt.plot(times, coolTemperatures, label='cool stream', color='blue')
         plt.xlabel("Time (minutes)")
         plt.ylabel("Temperature (deg celsius)")
         plt.title("Thermodynamic Simulation")
@@ -107,11 +107,11 @@ def printResults(iterations, warmTemp_previous, warmConvergeIteration, coolTemp_
     print("   Maximum permissible temperature: " + p["maximum permissible temperature (cel)"] + " deg C")
     print("   Minimum permissible termperature: " + p["minimum permissible temperature (cel)"] + " deg C")
     if warmConvergeIteration < iterations:
-        print("The warm region converged to a temperature of " + str(warmTemp_previous) + " degrees celsius on iteration " + str(warmConvergeIteration) + ", which maps to " + str(warmConvergeIteration * stepSize / 60) + " minutes of simulation time.")
+        print("The warm stream's temperature converged to " + str(warmTemp_previous) + " degrees celsius on iteration " + str(warmConvergeIteration) + ", which maps to " + str(warmConvergeIteration * stepSize / 60) + " minutes of simulation time.")
     else:
         print("The warm region did not converge. The final temperature was " + str(warmTemp_previous) + " degrees celsius.")
     if coolConvergeIteration < iterations:
-        print("The cool region converged to a temperature of " + str(coolTemp_previous) + " degrees celsius on iteration " + str(coolConvergeIteration) + ", which maps to " + str(coolConvergeIteration * stepSize / 60) + " minutes of simulation time.")
+        print("The cool stream's temperature converged to " + str(coolTemp_previous) + " degrees celsius on iteration " + str(coolConvergeIteration) + ", which maps to " + str(coolConvergeIteration * stepSize / 60) + " minutes of simulation time.")
     else:
         print("The cool region did not converge. The final temperature was " + str(coolTemp_previous) + " degrees celsius.")
     print("See the file " + getdataFileName() + " for a complete report of the temperatures.")
