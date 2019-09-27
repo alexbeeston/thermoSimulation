@@ -33,12 +33,16 @@ def buildRowString(vals):
 
 def checkTempExtremes(max, min, temp, stepSize, iteration, portion):
     if temp > max:
+        print("***")
         print("Error: The system overheated in the " + portion + " region on iteration " + str(iteration) + ", which maps to time = " + str(stepSize * iteration) + " seconds.")
         print("The temperature in the " + str(portion) + " region was " + str(temp) + " degrees celsius, and the maximum permissible temperature was " + str(max) + ".")
+        print("***")
         return False
     elif temp < min:
+        print("***")
         print("Error: The system temperature fell beneath the minimum permissible temperature in the " + portion + " region on iteration " + str(iteration) + ", which maps to time = " + str(stepSize * iteration) + " seconds.")
         print("The temperature in the " + str(portion) + " region was " + str(temp) + " degrees celsius, and the minimum permissible temperature was " + str(min) + ".")
+        print("***")
         return False
     else:
         return True
