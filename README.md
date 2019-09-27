@@ -1,19 +1,38 @@
-# thermoSimulation
+# Heat Exchanger Simulation
 
 ## Overview
-This is a cool program.
-step through it function by function; mostly linear execution.
+This program simulates a simple heat exchanger system by calculting the predicted temperature of water after absorbing heat in a small heater and then again after giving up some heat in a large storage tank. The input parameters are configured in the file "configs.txt", and the output is written to a .csv file named "data.csv" or as specified as a command line argument. The 
 
-## Usage
-
-In order to close the program, close the graph window that pops up at the end.
+## Run Instructions
+To properly use this program, do the following:<ol>
+- Install Python version 3.7 or greater.
+- Install the python package matplotlib with the command "pip install matplotlib". This allows the user to visualize the results of the computation on a line chart.
+- Configure the program to meet your needs by modifying the file "configs.txt". See section <i>Input</I> for more information on system configuration.
+- Run the program with 0 or 1 command line arguments; with 0 arguments, the name of the output data file will default  to "data.csv". With 1 argument, the data will be written to a file specified by the name of the argument.
+- Observe the summary of the computation printed on the command line along with the generated graphic
+- Close the program completely by exiting the graphic window
+- Do what you wil with the .csv data file.
 
 ## Input
-- the initial temperatures can cross
-- suggested input files for interesting configurations
-- heat out from the perspective of the environment (so only give positive values. Error if you don't)
+All parameters to the system are configured in the file "configs.txt". The following is an explanation of each parameters:
+- step size (sec): determines the interval in second over which the the calculations are made
+- heat in (kW) : the rate in kilowatts at which heat enters the system from the heating element. This value is seen from the perspective of the system, so only a positive value should be used.
+- heat out (k@) : the rate in kilowatts at which heat leaves the system from the storage tank. This value is seen from the perspective of the surroundings, so only positive value should be used.
+- mass flow rate (kg/sec) : the rate in kilograms per second at which the fluid (water) circulates through the system
+- initial warm temp (cel) : the initial temperature in celsius of the water directly after it leaves the heating element.
+- initial cool temp (cel) : the initial temperature in celsius of the water directly after it leaves the storage tank. The cool initial temperature is not necessarily smaller than the warm initial temperature. In fact, some interesting results are shown when the initial cool temperature is greater than the initial warm temperature.
+- heating element volume (m^3): the volume in cubic meters of the heating element.
+- storage tank volume (m^3) : the volume in cubic meters of the storage tank. The volume of the storage tank is not necessarily larger than the volume of the heating element. 
+- run time (min) : the time in minutes for which this simulation models the system
+- converge criteria (unitless) : the value at which convergence for the system is determined. Convergence is defined as the difference between the current value of the warm or cool stream and the previous value of the worm or cool stream, respectively. A system with the same rate of heat input and output will eventually converge on temperatures for the warm and cool streams.
+- maximum permissible temperature (cel) : the maximum allowable temperature in celsius at which the system can operate. An error is thrown if this value exceeds 100, since the system is designed to only allow for liquid water.
+- minimum permissible temperature (cel) : the minimum allowable temperature in celsius at which the system can operate. An error is thrown if this value is less than 0, since frozen water cannot flow through pipes. An error is also thrown if this value is greater than the maximum permissible temperature.
+
+All values are validated before the computation is run, and if the program detects invalid values, and error message with instructions for correcting the bad value is provided. The default configuration file provides a good view of a thermodynamic system. Two other configuration files names "configs1.txt", and "configs2.txt" are provided in the repository. If you use these files though, be sure to rename it to "configs.txt"
 
 ## Output
+The output of this program 
+## methodology 
 
 ## Assumptions
 - well-mixed and insulated

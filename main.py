@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 ########################
 ### HELPER FUNCTIONS ###
 ########################
+def getEnthalpy(temp, specificHeat):
+    return specificHeat * temp
+
 def getdataFileName():
     logFileName = "data.csv"
     if len(sys.argv) > 2:
@@ -55,7 +58,7 @@ def graphResults(times, warmTemperatures, coolTemperatures):
 
 def openDataFile():
     dataFile = open(getdataFileName(), "w")
-    headers = "Iteration,Time Stamp (sec),warm Temperature (Cel),cool Temperature (Cel)\n"
+    headers = "iteration,time stamp (sec),warm temperature (Cel),cool temperature (Cel),warm enthalpy (kJ/kg),cool enthalpy (kJ/kg)\n"
     dataFile.write(headers)
     dataFile.write("0,0," + str(warmTemp) + "," + str(coolTemp) + "\n")
     return dataFile
@@ -93,8 +96,8 @@ def printResults(iterations, warmTemp_previous, warmConvergeIteration, coolTemp_
     print("System Configurations:")
     print("   Simulated run time: " + str(duration / 60) + " min")
     print("   Step Size: " + p["step size (sec)"] + " sec")
-    print("   Heat input: " + p["heat in (kWatts)"] + " kW")
-    print("   Heat output: " + p["heat out (kWatts)"] + " kW")
+    print("   Heat input: " + p["heat in (kW)"] + " kW")
+    print("   Heat output: " + p["heat out (kW)"] + " kW")
     print("   Mass flow rate: " + p["mass flow rate (kg/sec)"] + " kg/sec")
     print("   Initial warm temperature: " + p["initial warm temp (cel)"] + " deg C")
     print("   Initial cool temperature: " + p["initial cool temp (cel)"] + " deg C")
@@ -104,11 +107,11 @@ def printResults(iterations, warmTemp_previous, warmConvergeIteration, coolTemp_
     print("   Maximum permissible temperature: " + p["maximum permissible temperature (cel)"] + " deg C")
     print("   Minimum permissible termperature: " + p["minimum permissible temperature (cel)"] + " deg C")
     if warmConvergeIteration < iterations:
-        print("The warm region converged to a temperature of " + str(warmTemp_previous) + " on iteration " + str(warmConvergeIteration) + ", which maps to " + str(warmConvergeIteration * stepSize / 60) + " minutes of simulation time.")
+        print("The warm region converged to a temperature of " + str(warmTemp_previous) + " degrees celsius on iteration " + str(warmConvergeIteration) + ", which maps to " + str(warmConvergeIteration * stepSize / 60) + " minutes of simulation time.")
     else:
         print("The warm region did not converge. The final temperature was " + str(warmTemp_previous) + " degrees celsius.")
     if coolConvergeIteration < iterations:
-        print("The cool region converged to a temperature of " + str(coolTemp_previous) + " on iteration " + str(coolConvergeIteration) + ", which maps to " + str(coolConvergeIteration * stepSize / 60) + " minutes of simulation time.")
+        print("The cool region converged to a temperature of " + str(coolTemp_previous) + " degrees celsius on iteration " + str(coolConvergeIteration) + ", which maps to " + str(coolConvergeIteration * stepSize / 60) + " minutes of simulation time.")
     else:
         print("The cool region did not converge. The final temperature was " + str(coolTemp_previous) + " degrees celsius.")
     print("See the file " + getdataFileName() + " for a complete report of the temperatures.")
@@ -129,8 +132,8 @@ for line in parameterFile:
     p[words[0]] = words[1]
 parameterFile.close()
 stepSize = float(p["step size (sec)"])
-heatInRate = float(p["heat in (kWatts)"])
-heatOutRate = float(p["heat out (kWatts)"])
+heatInRate = float(p["heat in (kW)"])
+heatOutRate = float(p["heat out (kW)"])
 massFlow = float(p["mass flow rate (kg/sec)"])
 warmTemp = float(p["initial warm temp (cel)"])
 coolTemp = float(p["initial cool temp (cel)"])
@@ -186,7 +189,7 @@ while i < int(iterations) and keepGoing:
         keepGoing = checkTempExtremes(maxTemp, minTemp, warmTemp, stepSize, i + 1, "cool")
 
     # log data
-    row = buildRowString([i + 1, (i + 1) * stepSize, warmTemp, coolTemp])
+    row = buildRowString([i + 1, (i + 1) * stepSize, warmTemp, coolTemp, getEnthalpy(warmTemp, specificHeatWater), getEnthalpy(coolTemp, specificHeatWater)])
     dataFile.write(row)
     times.append(((i + 1) * stepSize) / 60)
     warmTemperatures.append(warmTemp)

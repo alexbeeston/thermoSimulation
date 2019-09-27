@@ -1,6 +1,6 @@
 step size (sec),2
-heat in (kWatts),400
-heat out (kWatts),400
+heat in (kW),400
+heat out (kW),400
 mass flow rate (kg/sec),5
 initial warm temp (cel),30
 initial cool temp (cel),30
