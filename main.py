@@ -214,5 +214,6 @@ while i < int(iterations) and keepGoing:
 
 # log and visualize data
 dataFile.close()
-printResults(iterations, warmTemp_previous, warmConvergeIteration, coolTemp_previous, coolConvergeIteration, stepSize, p)
+if keepGoing:
+    printResults(iterations, warmTemp_previous, warmConvergeIteration, coolTemp_previous, coolConvergeIteration, stepSize, p)
 graphResults(times, warmTemperatures, coolTemperatures)
