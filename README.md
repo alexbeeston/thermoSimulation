@@ -4,7 +4,7 @@
 This program simulates a simple heat exchanger system by calculting the predicted temperature of water after absorbing heat in a small heater and then again after giving up some heat in a large storage tank. The input parameters are configured in the file "configs.txt", and the output is written to a .csv file named "data.csv" or as specified as a command line argument. The 
 
 ## Run Instructions
-To properly use this program, do the following:<ol>
+To properly use this program, do the following:
 - Install Python version 3.7 or greater.
 - Install the python package matplotlib with the command "pip install matplotlib". This allows the user to visualize the results of the computation on a line chart.
 - Configure the program to meet your needs by modifying the file "configs.txt". See section <i>Input</I> for more information on system configuration.
@@ -31,8 +31,18 @@ All parameters to the system are configured in the file "configs.txt". The follo
 All values are validated before the computation is run, and if the program detects invalid values, and error message with instructions for correcting the bad value is provided. The default configuration file provides a good view of a thermodynamic system. Two other configuration files names "configs1.txt", and "configs2.txt" are provided in the repository. If you use these files though, be sure to rename it to "configs.txt"
 
 ## Output
-The output of this program 
-## methodology 
+The output of this program is the .csv file, which contains rows of data that represent the system at various points in time. For each point in time, the following pieces of data are calculated:
+- the iteration number
+- the time stamp
+- the temperature of the warm stream
+- the temperature of the cool stream
+- the enthalpy of the warm stream
+- the entahlpy of the cool steam
+
+A brief summary of the convergence behavior of the program is also printed to the screen after the computation, along with a summary of the configurations used.
+
+## Methodology 
+The computation is performed by considering the flow of a small mass of fluid, known in the source code as the "fidelity", through the system. The fidelity is measured in kilograms and is calculated by multiplying the step size (sec) by the mass flow rate (kg/sec). During each time step, a mass of water equal to the value of "fidelity" leaves and enters both the heating element and the storage tank. In the case of the heating element after this small amount of water leaves and is replenished by cooler water from the storage tank, the resulting temperature of the two fluids is computed by a weighted average, according to the equation m_a(T_{a1} - T_{a2}) = m_b(T_{b2} - T_{b1})
 
 ## Assumptions
 - well-mixed and insulated
