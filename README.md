@@ -1,7 +1,7 @@
 # Heat Exchanger Simulation
 
 ## Overview
-This program simulates a simple heat exchanger by calculating the temperature of water after absorbing heat in a small heater and then again after giving up heat in a large storage tank. A "warm stream" flows from the heating element to the storage tank, and a "cool stream" flows from the storage tank back to the heating element. The input parameters are configured in the file "configs.txt", and the output is written to a .csv file named "data.csv" or as specified as a command line argument. 
+This program simulates a simple heat exchanger by calculating the temperature of water after absorbing heat in a small heater and again after giving up heat in a large storage tank. A "warm stream" flows from the heating element to the storage tank, and a "cool stream" flows from the storage tank back to the heating element. The input parameters are configured in the file "configs.txt", and the output is written to a .csv file named "data.csv" or as specified as a command line argument. 
 
 ## Run Instructions
 To properly use this program, do the following:
